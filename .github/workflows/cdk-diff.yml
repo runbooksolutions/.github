@@ -27,6 +27,13 @@ jobs:
       - name: Mask AWS Account ID
         run: |
           echo '::add-mask::${{ secrets.AWS_ACCOUNT_ID }}'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
+          aws-region: 'us-east-1'
+          role-session-name: "GitHubActions-DeployLayerStack"
       
       - name: Checkout Source
         uses: actions/checkout@v4
@@ -41,12 +48,6 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
-          aws-region: 'us-east-1'
 
       - name: CDK Diff
         id: cdk-diff
