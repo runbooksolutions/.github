@@ -1,0 +1,47 @@
+name: Deploy Microservice
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Version of Node to use'
+        required: true
+        type: string
+        default: '20.x'
+
+jobs:
+  cdk-deploy:
+    name: Deploy Microservice (cdk deploy)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+    steps:
+      - name: Mask AWS Account ID
+        run: |
+          echo '::add-mask::${{ secrets.AWS_ACCOUNT_ID }}'
+      
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install CDK
+        run: npm install -g aws-cdk
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_DEPLOY_ROLE }}
+          aws-region: 'us-east-1'
+          role-session-name: "GitHubActions-CDK-DEPLOY"
+
+      - name: Deploy Microservice
+        run: cdk deploy --all --require-approval never
