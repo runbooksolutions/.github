@@ -47,7 +47,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
           aws-region: 'us-east-1'
-          role-session-name: "GitHubActions-CDK-DIFF"
 
       - name: CDK Diff
         id: cdk-diff
