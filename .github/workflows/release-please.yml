@@ -11,7 +11,7 @@ on:
     outputs:
       release-created:
         description: 'Whether a release was created'
-        value: ${{ steps.release-please.outputs.release-created }}
+        value: ${{ jobs.release-please.outputs.releases_created }}
 
 jobs:
   release-please:
@@ -22,9 +22,12 @@ jobs:
       contents: write
       pull-requests: write
 
+    outputs:
+      releases_created: ${{ steps.release-please.outputs.releases_created }}
+
     steps:
       - uses: google-github-actions/release-please-action@v4
         id: release-please
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: ${{ var.release-type }}
+          release-type: ${{ inputs.release-type }}
