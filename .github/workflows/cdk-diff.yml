@@ -12,6 +12,9 @@ on:
       cdk-diff:
         description: "Results of running cdk diff"
         value: ${{ jobs.cdk-diff.outputs.cdk-diff}}
+    secrets:
+      AWS_GITHUB_DIFF_ROLE:
+        required: true
 
 jobs:
   cdk-diff:
