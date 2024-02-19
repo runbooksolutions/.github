@@ -33,7 +33,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
           aws-region: 'us-east-1'
-          role-session-name: "GitHubActions-DeployLayerStack"
           mask-aws-account-id: true
       
       - name: Checkout Source
@@ -50,16 +49,11 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Calculate Differences
-        run: |
-          cdk diff 2>&1 2>&1 | tee output.log
-          sed -i "s/arn:aws:iam::[^:]*:role\/cdk-[^']*'/[REDACTED]'/g" output.log
-      
       - name: CDK Diff
         id: cdk-diff
         run: |
           {
             echo 'diff-result<<EOF'
-            cat output.log
+            cdk diff 2>&1
             echo EOF
           } >> "$GITHUB_OUTPUT"
