@@ -1,4 +1,4 @@
-name: Release Management
+name: Release Please
 
 on:
   workflow_call:
@@ -8,6 +8,11 @@ on:
         required: true
         type: string
         default: 'simple'
+    secrets:
+      BOT_ID:
+        required: true
+      BOT_KEY:
+        required: true
     outputs:
       release-created:
         description: 'Whether a release was created'
@@ -15,7 +20,7 @@ on:
 
 jobs:
   release-please:
-    name: Rlease Please
+    name: Release Please
     runs-on: ubuntu-latest
 
     permissions:
@@ -26,8 +31,14 @@ jobs:
       releases_created: ${{ steps.release-please.outputs.releases_created }}
 
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.BOT_ID }}
+          private-key: ${{ secrets.BOT_KEY }}
+
       - uses: google-github-actions/release-please-action@v4
         id: release-please
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           release-type: ${{ inputs.release-type }}
