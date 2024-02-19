@@ -28,12 +28,12 @@ jobs:
       cdk-diff: ${{ steps.cdk-diff.outputs.diff-result }}
     steps:
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
-      #     aws-region: 'us-east-1'
-      #     mask-aws-account-id: true
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
+          aws-region: 'us-east-1'
+          mask-aws-account-id: true
       
       - name: Checkout Source
         uses: actions/checkout@v4
@@ -53,5 +53,5 @@ jobs:
         id: cdk-diff
         run: |
           echo 'diff-result<<EOF' >> $GITHUB_OUTPUT
-          npm cdk diff 2>&1 | tee >> $GITHUB_OUTPUT
+          cdk diff 2>&1 | tee >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
