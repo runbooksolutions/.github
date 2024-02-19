@@ -11,7 +11,7 @@ on:
     outputs:
       cdk-diff:
         description: "Results of running cdk diff"
-        value: ${{ jobs.cdk-diff.outputs.cdk-diff}}
+        value: ${{ jobs.cdk-diff.outputs.results }}
     secrets:
       AWS_GITHUB_DIFF_ROLE:
         required: true
@@ -25,7 +25,7 @@ jobs:
       packages: read
       id-token: write
     outputs:
-      cdk-diff: ${{ steps.diff-results.outputs.results }}
+      results: ${{ steps.capture-output.outputs.RESULTS }}
     steps:
 
       - name: Configure AWS credentials
@@ -50,14 +50,13 @@ jobs:
         run: npm ci
 
       - name: CDK Diff
-        run: |
-          cdk diff 2>&1 2>&1 | tee output.log
+        run: cdk diff 2>&1 2>&1 | tee output.log
 
       - name: Gather Output
-        id: diff-results
+        id: capture-output
         run: |
           {
-            echo 'results<<EOF'
+            echo 'RESULTS<<EOF'
             cat output.log
             echo EOF
           } >> "$GITHUB_OUTPUT"
