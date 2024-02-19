@@ -53,5 +53,5 @@ jobs:
         id: cdk-diff
         run: |
           echo 'diff-result<<EOF' >> $GITHUB_OUTPUT
-          cdk diff 2>&1 | tee >> $GITHUB_OUTPUT
+          cdk diff 2>&1 2>&1 | tee >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
