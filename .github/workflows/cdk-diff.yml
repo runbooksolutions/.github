@@ -35,7 +35,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
           aws-region: 'us-east-1'
-          mask-aws-account-id: true
       
       - name: Checkout Source
         uses: actions/checkout@v4
@@ -54,8 +53,6 @@ jobs:
       - name: CDK Diff
         run: |
           cdk diff 2>&1 2>&1 | tee output.log
-          sed -i "s/${{ secrets.AWS_GITHUB_DIFF_ROLE }}/[REDACTED]/g" output.log
-          sed -i "s/${{ secrets.AWS_ACCOUNT_ID }}/[REDACTED]/g" output.log
 
       - name: Gather Output
         id: capture-output
