@@ -1,0 +1,67 @@
+name: Diff Microservice 
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Version of Node to use'
+        required: true
+        type: string
+        default: '20.x'
+    outputs:
+      cdk-diff:
+        description: "Results of running cdk diff"
+        value: ${{ jobs.cdk-diff.outputs.results }}
+    secrets:
+      AWS_GITHUB_DIFF_ROLE:
+        required: true
+      AWS_ACCOUNT_ID:
+        required: true
+
+jobs:
+  cdk-diff:
+    name: Diff Microservice (cdk diff)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+    outputs:
+      results: ${{ steps.capture-output.outputs.RESULTS }}
+    steps:
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
+          aws-region: 'us-east-1'
+      
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Configure Github NPM Registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+
+      - name: Install CDK
+        run: npm install -g aws-cdk
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: CDK Diff
+        run: |
+          cdk diff 2>&1 2>&1 | tee output.log
+
+      - name: Gather Output
+        id: capture-output
+        run: |
+          {
+            echo 'RESULTS<<EOF'
+            cat output.log
+            echo EOF
+          } >> "$GITHUB_OUTPUT"

@@ -1,0 +1,33 @@
+name: Release Management
+
+on:
+  workflow_call:
+    inputs:
+      release-type:
+        description: 'The type of release to perform'
+        required: true
+        type: string
+        default: 'simple'
+    outputs:
+      release-created:
+        description: 'Whether a release was created'
+        value: ${{ jobs.release-please.outputs.releases_created }}
+
+jobs:
+  release-please:
+    name: Rlease Please
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    outputs:
+      releases_created: ${{ steps.release-please.outputs.releases_created }}
+
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release-please
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: ${{ inputs.release-type }}
