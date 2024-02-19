@@ -24,9 +24,6 @@ jobs:
     outputs:
       cdk-diff: ${{ steps.cdk-diff.outputs.cdk-diff }}
     steps:
-      - name: Mask AWS Account ID
-        run: |
-          echo '::add-mask::${{ secrets.AWS_ACCOUNT_ID }}'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -34,6 +31,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_GITHUB_DIFF_ROLE }}
           aws-region: 'us-east-1'
           role-session-name: "GitHubActions-DeployLayerStack"
+          mask-aws-account-id: true
       
       - name: Checkout Source
         uses: actions/checkout@v4
