@@ -25,7 +25,7 @@ jobs:
       packages: read
       id-token: write
     outputs:
-      cdk-diff: ${{ steps.cdk-diff.outputs.cdk-diff }}
+      cdk-diff: ${{ steps.cdk-diff.outputs.diff-result }}
     steps:
 
       - name: Configure AWS credentials
