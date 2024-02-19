@@ -54,6 +54,6 @@ jobs:
         run: |
           {
             echo 'diff-result<<EOF'
-            cdk diff 2>&1
+            cdk diff 2>&1 | tee
             echo EOF
           } >> "$GITHUB_OUTPUT"
