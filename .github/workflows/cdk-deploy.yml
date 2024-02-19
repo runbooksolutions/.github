@@ -30,6 +30,9 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - name: Configure Github NPM Registry
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+
       - name: Install CDK
         run: npm install -g aws-cdk
 
