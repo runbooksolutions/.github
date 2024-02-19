@@ -15,6 +15,8 @@ on:
     secrets:
       AWS_GITHUB_DIFF_ROLE:
         required: true
+      AWS_ACCOUNT_ID:
+        required: true
 
 jobs:
   cdk-diff:
@@ -50,7 +52,11 @@ jobs:
         run: npm ci
 
       - name: CDK Diff
-        run: cdk diff 2>&1 2>&1 | tee output.log
+        run: |
+          cdk diff 2>&1 2>&1 | tee output.log
+          sed -i "s/'arn:aws:iam::[^:]*:role\/cdk-[^']*'/[REDACTED]'/g" output.log
+          sed -i "s/${{ secrets.AWS_ACCOUNT_ID }}/[REDACTED]/g" output.log
+          sed -i "s/${{ secrets.AWS_GITHUB_DIFF_ROLE }}/[REDACTED]/g" output.log
 
       - name: Gather Output
         id: capture-output
