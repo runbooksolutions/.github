@@ -6,12 +6,15 @@ on:
       - opened
       - edited
       - synchronize
+  push:
+    branches: main
 
 permissions:
   pull-requests: read
 
 jobs:
   main:
+    if: ${{ github.event_name == 'pull_request' }}
     name: Validate
     runs-on: ubuntu-latest
     steps:
