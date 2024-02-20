@@ -104,4 +104,7 @@ jobs:
         
           # Call the function and capture the JSON output
           result_json=$(getStacks)
+          result_json="${result_json//'%'/'%25'}"
+          result_json="${result_json//$'\n'/'%0A'}"
+          result_json="${result_json//$'\r'/'%0D'}"
           echo "results=$(jq -c -r .results <<< $result_json)" >> $GITHUB_OUTPUT
