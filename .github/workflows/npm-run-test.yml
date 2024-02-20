@@ -17,6 +17,9 @@ jobs:
   run-tests:
     name: Run Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     outputs:
       test-results: ${{ steps.test-results.outputs.test-results }}
     steps:
