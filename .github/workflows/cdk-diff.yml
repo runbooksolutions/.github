@@ -104,4 +104,4 @@ jobs:
         
           # Call the function and capture the JSON output
           result_json=$(getStacks)
-          echo "::set-output results=$(jq -c -r .results <<< $result_json)"
+          echo "results=$(jq -c -r .results <<< $result_json)" >> $GITHUB_OUTPUT
