@@ -83,7 +83,8 @@ jobs:
                           stack_result = []
                           current_section = None
                           current_content = None
-                          stack_sections[current_stack] = {}
+                          if current_stack is not None:
+                              stack_sections[current_stack] = {}
                           continue
 
                       section_match = re.match(r'^(\w+)', line)
