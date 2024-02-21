@@ -103,12 +103,9 @@ jobs:
                           current_content.append(line.strip())
                           stack_result.append(line.strip())
           
-                      
-                      
-              
+              # Add the result for the last stack
               if len(stack_result) > 0:
                   stack_sections[current_stack]['result'] = stack_result
-          
               # Concatenate lines of the same subsection
               for stack in stack_sections:
                   for section in stack_sections[stack]:
