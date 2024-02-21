@@ -60,51 +60,33 @@ jobs:
       - name: Process Results
         id: results
         run: |
-          function getStacks() {
-            # Initialize an empty array to store the stack details
-            stacks=()
-            # Regular expression to match the beginning of a stack section
-            stack_regex="^Stack (\w+)$"
-            # Regular expression to match the end of the stack section
-            end_regex="^✨"
-            # Flag to track whether we're inside a stack section
-            inside_stack=false
-            # Variable to store the current stack name
-            current_stack=""
-            # Variable to store the result for the current stack
-            current_result=""
-            # Iterate over each line in the input
+          getStacks() {
+            local -a stacks=()  # Initialize an empty array to store the stack details
+            local stack_regex="^Stack (\w+)$"  # Regular expression to match the beginning of a stack section
+            local end_regex="^✨"  # Regular expression to match the end of the stack section
+            local inside_stack=false  # Flag to track whether we're inside a stack section
+            local current_stack=""  # Variable to store the current stack name
+            local current_result=""  # Variable to store the result for the current stack
+
             while IFS= read -r line; do
-                # Check if the line matches the beginning of a stack section
                 if [[ $line =~ $stack_regex ]]; then
-                    # If we're already inside a stack section, add the previous stack to the stacks array
                     if $inside_stack; then
                         stacks+=("{\"stack\": \"$current_stack\", \"result\": \"$current_result\"}")
                         current_result=""
                     fi
-                    # Reset current stack variable
                     current_stack="${BASH_REMATCH[1]}"
                     inside_stack=true
                 elif $inside_stack && ! [[ $line =~ $end_regex ]]; then
-                    # If we're inside a stack section and the line is not the end of the section,
-                    # add the line to the current result
                     current_result+=$(echo "$line" | sed 's/\\/\\\\/g; s/"/\\"/g')$'\\n'
                 elif $inside_stack; then
-                    # If we're inside a stack section and the line matches the end regex,
-                    # add the current stack to the stacks array
                     stacks+=("{\"stack\": \"$current_stack\", \"result\": \"$current_result\"}")
                     inside_stack=false
                 fi
-            done < "output.log"
-        
-            # Convert the stacks array to a JSON object
-            json="{\"results\": [$(IFS=,; echo "${stacks[*]}")]}"
-            echo "$json"  # Echo the JSON
+            done < "test_output.log"
+
+            printf '%s\n' "${stacks[@]}"  # Print the stacks
           }
-        
+
           # Call the function and capture the JSON output
           result_json=$(getStacks)
-          result_json="${result_json//'%'/'%25'}"
-          result_json="${result_json//$'\n'/'%0A'}"
-          result_json="${result_json//$'\r'/'%0D'}"
           echo "results=$(jq -c -r .results <<< $result_json)" >> $GITHUB_OUTPUT
