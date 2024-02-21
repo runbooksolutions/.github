@@ -71,12 +71,17 @@ jobs:
               stack_result = []
               current_section = None
               current_content = None
-
+          
               with open(log_file, 'r') as file:
                   for line in file:
+                      difference_count_match = re.match(r'^✨  Number of stacks with differences: ([\d]+)', line)
+                      if difference_count_match is not None:
+                          stack_sections['difference_count'] = difference_count_match.group(1)
+                          continue
+          
                       stack_match = re.match(r'^Stack (\w+)|^✨', line)
                       if stack_match:
-
+          
                           if len(stack_result) > 0:
                               stack_sections[current_stack]['result'] = stack_result
                           current_stack = stack_match.group(1)
@@ -86,28 +91,32 @@ jobs:
                           if current_stack is not None:
                               stack_sections[current_stack] = {}
                           continue
-
+          
                       section_match = re.match(r'^(\w+)', line)
                       if section_match:
                           current_section = section_match.group(1)
                           current_content = []
                           stack_sections[current_stack][current_section] = current_content
                           continue
-
+          
                       if current_stack and current_section and current_content is not None:
                           current_content.append(line.strip())
                           stack_result.append(line.strip())
+          
+                      
+                      
               
-              # Add the result for the last stack
               if len(stack_result) > 0:
                   stack_sections[current_stack]['result'] = stack_result
+          
               # Concatenate lines of the same subsection
               for stack in stack_sections:
                   for section in stack_sections[stack]:
-                      stack_sections[stack][section] = '\n'.join(stack_sections[stack][section])
-
+                      if "_" not in stack:
+                          stack_sections[stack][section] = '\n'.join(stack_sections[stack][section])
+          
               return stack_sections
-
+              
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
             print(f'results={json.dumps(parse_log_file("output.log"))}', file=fh)
       # - name: Process Results
