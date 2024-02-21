@@ -84,7 +84,7 @@ jobs:
                 fi
             done < "output.log"
 
-            printf '%s\n' "${stacks[@]}"  # Print the stacks
+            printf '%s' "${stacks[@]}"  # Print the stacks
           }
 
           # Call the function and capture the JSON output
