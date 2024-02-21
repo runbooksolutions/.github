@@ -82,7 +82,7 @@ jobs:
                     stacks+=("{\"stack\": \"$current_stack\", \"result\": \"$current_result\"}")
                     inside_stack=false
                 fi
-            done < "test_output.log"
+            done < "output.log"
 
             printf '%s\n' "${stacks[@]}"  # Print the stacks
           }
