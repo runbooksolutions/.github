@@ -86,6 +86,7 @@ jobs:
                               stack_sections[current_stack]['result'] = stack_result
                           current_stack = stack_match.group(1)
                           stack_result = []
+                          stack_result.append(line.strip())
                           current_section = None
                           current_content = None
                           if current_stack is not None:
@@ -94,6 +95,7 @@ jobs:
           
                       section_match = re.match(r'^(\w+)', line)
                       if section_match:
+                          stack_result.append(line.strip())
                           current_section = section_match.group(1)
                           current_content = []
                           stack_sections[current_stack][current_section] = current_content
