@@ -59,34 +59,83 @@ jobs:
 
       - name: Process Results
         id: results
+        shell: python
         run: |
-          getStacks() {
-            local -a stacks=()  # Initialize an empty array to store the stack details
-            local stack_regex="^Stack (\w+)$"  # Regular expression to match the beginning of a stack section
-            local end_regex="^✨"  # Regular expression to match the end of the stack section
-            local inside_stack=false  # Flag to track whether we're inside a stack section
-            local current_stack=""  # Variable to store the current stack name
-            local current_result=""  # Variable to store the result for the current stack
+          import os
+          import re
+          import json
 
-            while IFS= read -r line; do
-                if [[ $line =~ $stack_regex ]]; then
-                    if $inside_stack; then
-                        stacks+=("{\"stack\": \"$current_stack\", \"result\": \"$current_result\"}")
-                        current_result=""
-                    fi
-                    current_stack="${BASH_REMATCH[1]}"
-                    inside_stack=true
-                elif $inside_stack && ! [[ $line =~ $end_regex ]]; then
-                    current_result+=$(echo "$line" | sed 's/\\/\\\\/g; s/"/\\"/g')$'\\n'
-                elif $inside_stack; then
-                    stacks+=("{\"stack\": \"$current_stack\", \"result\": \"$current_result\"}")
-                    inside_stack=false
-                fi
-            done < "output.log"
+          def parse_log_file(log_file):
+              stack_sections = {}
+              current_stack = None
+              stack_result = []
+              current_section = None
+              current_content = None
 
-            printf '%s' "${stacks[@]}"  # Print the stacks
-          }
+              with open(log_file, 'r') as file:
+                  for line in file:
+                      stack_match = re.match(r'^Stack (\w+)', line)
+                      if stack_match:
 
-          # Call the function and capture the JSON output
-          result_json=$(getStacks)
-          echo "results=$(jq -c -r -s . <<< $result_json)" >> $GITHUB_OUTPUT
+                          if len(stack_result) > 0:
+                              stack_sections[current_stack]['result'] = stack_result
+                          current_stack = stack_match.group(1)
+                          stack_result = []
+                          current_section = None
+                          current_content = None
+                          stack_sections[current_stack] = {}
+                          continue
+
+                      section_match = re.match(r'^(\w+)', line)
+                      if section_match:
+                          current_section = section_match.group(1)
+                          current_content = []
+                          stack_sections[current_stack][current_section] = current_content
+                          continue
+
+                      if current_stack and current_section and current_content is not None:
+                          current_content.append(line.strip())
+                          stack_result.append(line.strip())
+
+              # Concatenate lines of the same subsection
+              for stack in stack_sections:
+                  for section in stack_sections[stack]:
+                      stack_sections[stack][section] = '\n'.join(stack_sections[stack][section])
+
+              return stack_sections
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            print(f'result={json.dumps(parse_log_file("output.log"))}', file=fh)
+      # - name: Process Results
+      #   id: results
+      #   run: |
+      #     getStacks() {
+      #       local -a stacks=()  # Initialize an empty array to store the stack details
+      #       local stack_regex="^Stack (\w+)$"  # Regular expression to match the beginning of a stack section
+      #       local end_regex="^✨"  # Regular expression to match the end of the stack section
+      #       local inside_stack=false  # Flag to track whether we're inside a stack section
+      #       local current_stack=""  # Variable to store the current stack name
+      #       local current_result=""  # Variable to store the result for the current stack
+
+      #       while IFS= read -r line; do
+      #           if [[ $line =~ $stack_regex ]]; then
+      #               if $inside_stack; then
+      #                   stacks+=("{\"stack\": \"$current_stack\", \"result\": \"$current_result\"}")
+      #                   current_result=""
+      #               fi
+      #               current_stack="${BASH_REMATCH[1]}"
+      #               inside_stack=true
+      #           elif $inside_stack && ! [[ $line =~ $end_regex ]]; then
+      #               current_result+=$(echo "$line" | sed 's/\\/\\\\/g; s/"/\\"/g')$'\\n'
+      #           elif $inside_stack; then
+      #               stacks+=("{\"stack\": \"$current_stack\", \"result\": \"$current_result\"}")
+      #               inside_stack=false
+      #           fi
+      #       done < "output.log"
+
+      #       printf '%s' "${stacks[@]}"  # Print the stacks
+      #     }
+
+      #     # Call the function and capture the JSON output
+      #     result_json=$(getStacks)
+      #     echo "results=$(jq -c -r -s . <<< $result_json)" >> $GITHUB_OUTPUT
