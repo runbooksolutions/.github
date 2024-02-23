@@ -2,6 +2,7 @@ name: "Conventional Commit PR Title"
 
 on:
   pull_request:
+    branches: [ $default-branch ]
     types:
       - opened
       - edited
